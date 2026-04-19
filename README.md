@@ -248,8 +248,8 @@ Ombre Brain gives it persistent memory — not cold key-value storage, but a sys
 - **Obsidian 原生 / Obsidian-native**: 每个记忆桶就是一个 Markdown 文件，YAML frontmatter 存元数据。可以直接在 Obsidian 里浏览、编辑、搜索。自动注入 `[[双链]]`。
   Each memory bucket is a Markdown file with YAML frontmatter. Browse, edit, and search directly in Obsidian. Wikilinks are auto-injected.
 
-- **API 降级 / API degradation**: 脱水压缩和自动打标优先用廉价 LLM API（DeepSeek / Gemini 等），API 不可用时自动降级到本地关键词分析——始终可用。向量检索不可用时降级到 fuzzy matching。
-  Dehydration and auto-tagging prefer a cheap LLM API (DeepSeek / Gemini etc.). When the API is unavailable, it degrades to local keyword analysis — always functional. Embedding search degrades to fuzzy matching when unavailable.
+- **API 脱水 + 缓存 / API dehydration + cache**: 脱水压缩和自动打标通过 LLM API（DeepSeek / Gemini 等）完成，结果缓存到本地 SQLite（`dehydration_cache.db`），相同内容不重复调用 API。向量检索不可用时降级到 fuzzy matching。
+  Dehydration and auto-tagging are done via LLM API (DeepSeek / Gemini etc.), with results cached locally in SQLite (`dehydration_cache.db`) to avoid redundant API calls. Embedding search degrades to fuzzy matching when unavailable.
 
 - **历史对话导入 / Conversation history import**: 将过去与 Claude / ChatGPT / DeepSeek 等的对话批量导入为记忆桶。支持 Claude JSON 导出、ChatGPT 导出、Markdown、纯文本等格式，分块处理带断点续传，通过 Dashboard「导入」Tab 操作。
   Batch-import past conversations (Claude / ChatGPT / DeepSeek etc.) as memory buckets. Supports Claude JSON export, ChatGPT export, Markdown, and plain text. Chunked processing with resume support, via the Dashboard "Import" tab.
@@ -560,6 +560,7 @@ docker compose -f docker-compose.user.yml up -d
 ```
 
 验证：`curl http://localhost:8000/health`
+Dashboard：浏览器打开 `http://localhost:8000/dashboard`
 
 ### Render
 
@@ -572,13 +573,15 @@ docker compose -f docker-compose.user.yml up -d
 1. （可选）设置 `OMBRE_API_KEY`：任何 OpenAI 兼容 API 的 key，不填则自动降级为本地关键词提取
 2. （可选）设置 `OMBRE_BASE_URL`：API 地址，支持任意 OpenAI 化地址，如 `https://api.deepseek.com/v1` / `http://123.1.1.1:7689/v1` / `http://your-ollama:11434/v1`
 3. Render 自动挂载持久化磁盘到 `/opt/render/project/src/buckets`
-4. 部署后 MCP URL：`https://<你的服务名>.onrender.com/mcp`
+4. Dashboard：`https://<你的服务名>.onrender.com/dashboard`
+5. 部署后 MCP URL：`https://<你的服务名>.onrender.com/mcp`
 
 `render.yaml` is included. After clicking the button:
 1. (Optional) `OMBRE_API_KEY`: any OpenAI-compatible key; omit to fall back to local keyword extraction
 2. (Optional) `OMBRE_BASE_URL`: any OpenAI-compatible endpoint, e.g. `https://api.deepseek.com/v1`, `http://123.1.1.1:7689/v1`, `http://your-ollama:11434/v1`
 3. Persistent disk auto-mounts at `/opt/render/project/src/buckets`
-4. MCP URL after deploy: `https://<your-service>.onrender.com/mcp`
+4. Dashboard: `https://<your-service>.onrender.com/dashboard`
+5. MCP URL after deploy: `https://<your-service>.onrender.com/mcp`
 
 ### Zeabur
 
@@ -618,6 +621,7 @@ docker compose -f docker-compose.user.yml up -d
 5. **验证 / Verify**
    - 访问 `https://<你的域名>.zeabur.app/health`，应返回 JSON
    - Visit `https://<your-domain>.zeabur.app/health` — should return JSON
+   - Dashboard：`https://<你的域名>.zeabur.app/dashboard`
    - 最终 MCP 地址 / MCP URL：`https://<你的域名>.zeabur.app/mcp`
 
 **常见问题 / Troubleshooting：**
