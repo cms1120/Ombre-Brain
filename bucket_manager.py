@@ -28,15 +28,12 @@
 import os
 import math
 import logging
-import re
 import shutil
-from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import frontmatter
-import jieba
 from rapidfuzz import fuzz
 
 from utils import generate_bucket_id, sanitize_name, safe_path, now_iso
